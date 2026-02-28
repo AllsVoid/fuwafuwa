@@ -505,6 +505,77 @@ window.onresize = () => {
 </script>
 
 <script>
+import * as LivePhotosKit from 'livephotoskit';
+import { siteConfig } from '../config';
+
+function initLivePhotos() {
+	if (!siteConfig.livephoto) return;
+
+	const mdImages = document.querySelectorAll('.custom-md img');
+	mdImages.forEach((img) => {
+		if (!(img instanceof HTMLImageElement)) return;
+		const src = img.getAttribute('src');
+
+		if (src && src.includes('#live=')) {
+			const [photoSrc, videoSrc] = src.split('#live=');
+
+			const container = document.createElement('div');
+
+			const width = img.clientWidth || img.getAttribute('width');
+			const height = img.clientHeight || img.getAttribute('height');
+			if (width && height) {
+				container.style.aspectRatio = `${width} / ${height}`;
+			} else {
+				container.style.minHeight = '300px';
+			}
+			container.style.width = '100%';
+			container.style.borderRadius = 'var(--radius-large)';
+			container.style.overflow = 'hidden';
+
+			img.parentNode?.replaceChild(container, img);
+
+			const player = LivePhotosKit.createPlayer({
+				container,
+				photoSrc,
+				videoSrc,
+			});
+		}
+	});
+
+	const wrappers = document.querySelectorAll('.live-photo-wrapper');
+	wrappers.forEach((wrapper) => {
+		if (!(wrapper instanceof HTMLElement)) return;
+		if (wrapper.hasAttribute('data-initialized')) return;
+
+		const photoSrc = wrapper.getAttribute('data-photo-src');
+		const videoSrc = wrapper.getAttribute('data-video-src');
+
+		if (photoSrc && videoSrc) {
+			LivePhotosKit.augmentElementAsPlayer(wrapper, {
+				photoSrc,
+				videoSrc,
+			});
+			wrapper.setAttribute('data-initialized', 'true');
+		}
+	});
+}
+
+const setupLivePhotoPlugin = () => {
+	initLivePhotos();
+
+	window.swup.hooks.on('content:replace', () => {
+		initLivePhotos();
+	});
+};
+
+if (window.swup) {
+	setupLivePhotoPlugin();
+} else {
+	document.addEventListener('swup:enable', setupLivePhotoPlugin);
+}
+</script>
+
+<script>
 import PhotoSwipeLightbox from "photoswipe/lightbox"
 import "photoswipe/style.css"
 
