@@ -22,9 +22,42 @@ const SIZE_MAP = {
  */
 export function ImgDirectiveComponent(properties, _children) {
 	const props = properties ?? {};
+	const video = props.video;
+
+	// 实况图：通过 ::img{src="..." video="..."} 触发，生成 live-photo-wrapper
+	if (video != null && video !== "") {
+		const {
+			video: _videoDrop,
+			class: classAttr,
+			className,
+			...rest
+		} = props;
+
+		let customClass = "";
+		if (Array.isArray(className)) {
+			customClass = className.join(" ");
+		} else if (typeof className === "string") {
+			customClass = className;
+		} else if (typeof classAttr === "string") {
+			customClass = classAttr;
+		}
+
+		const wrapClass = ["live-photo-wrapper"];
+		if (customClass) wrapClass.push(customClass);
+
+		const { src, ..._rest } = rest;
+
+		return h("div", {
+			class: wrapClass.join(" "),
+			"data-photo-src": src,
+			"data-video-src": video,
+			style: "width:100%; min-height:300px; border-radius:var(--radius-large); overflow:hidden",
+		});
+	}
+
 	const sizeRaw = props.size;
 	if (sizeRaw == null || sizeRaw === "") {
-		// 普通图片：直接透传属性
+		// 普通图片或仅使用 ::img 不带 size：直接透传属性
 		return h("img", props);
 	}
 
