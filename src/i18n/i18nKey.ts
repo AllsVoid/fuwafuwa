@@ -7,6 +7,8 @@ enum I18nKey {
 	tags = "tags",
 	categories = "categories",
 	recentPosts = "recentPosts",
+	thoughts = "thoughts",
+	recentThoughts = "recentThoughts",
 
 	comments = "comments",
 

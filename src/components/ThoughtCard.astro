@@ -1,0 +1,108 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { Icon } from "astro-icon/components";
+import { profileConfig } from "../config";
+import { getTagUrl } from "../utils/url-utils";
+import ImageWrapper from "./misc/ImageWrapper.astro";
+
+interface Props {
+	entry: CollectionEntry<"thoughts">;
+}
+
+const { entry } = Astro.props;
+const { published, tags, image } = entry.data;
+const { Content } = await entry.render();
+
+const hasImage = image && image !== "";
+const hasTags = tags && tags.length > 0;
+
+function formatDate(date: Date): string {
+	const now = new Date();
+	const diff = now.getTime() - date.getTime();
+	const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+	if (days === 0) return "今天";
+	if (days === 1) return "昨天";
+	if (days < 7) return `${days} 天前`;
+
+	return date.toLocaleDateString("zh-CN", {
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+	});
+}
+---
+
+<div id={entry.slug} class="card-base px-5 py-5 flex gap-4 group transition-all">
+    <!-- 左侧头像列 -->
+    <div class="flex flex-col items-center shrink-0">
+        <a href="/about/" aria-label="Author Avatar"
+           class="w-10 h-10 rounded-full overflow-hidden block shrink-0 ring-2 ring-transparent
+                  hover:ring-[var(--primary)] transition-all active:scale-90">
+            {profileConfig.avatar
+                ? <ImageWrapper src={profileConfig.avatar} alt="Avatar" class="w-full h-full object-cover" />
+                : <div class="w-full h-full bg-[var(--primary)] flex items-center justify-center text-white font-bold text-sm">
+                      {(profileConfig.name || "?").charAt(0).toUpperCase()}
+                  </div>
+            }
+        </a>
+        <!-- 时间线竖线 -->
+        <div class="w-px flex-1 bg-black/[0.08] dark:bg-white/[0.08] mt-3 min-h-[1rem]"></div>
+    </div>
+
+    <!-- 右侧内容列 -->
+    <div class="flex-1 min-w-0 pb-2">
+        <!-- 顶部：名字 + 时间 -->
+        <div class="flex items-baseline gap-2 mb-2.5">
+            <span class="font-semibold text-[0.95rem] text-neutral-800 dark:text-neutral-200 transition">
+                {profileConfig.name || "博主"}
+            </span>
+            <time class="text-xs text-neutral-400 dark:text-neutral-500 transition" datetime={published.toISOString()}>
+                {formatDate(published)}
+            </time>
+        </div>
+
+        <!-- 正文内容 -->
+        <div class="prose dark:prose-invert prose-sm max-w-none
+                    prose-p:my-1.5 prose-p:leading-relaxed
+                    prose-a:text-[var(--primary)] prose-a:no-underline hover:prose-a:underline
+                    prose-blockquote:border-[var(--primary)] prose-blockquote:text-neutral-500
+                    prose-code:text-[var(--primary)] prose-code:bg-black/5 dark:prose-code:bg-white/10
+                    prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none
+                    text-neutral-700 dark:text-neutral-300 transition">
+            <Content />
+        </div>
+
+        <!-- 可选图片 -->
+        {hasImage && (
+            <div class="mt-3 rounded-xl overflow-hidden max-h-64">
+                <ImageWrapper src={image} alt="Thought image" class="w-full object-cover" />
+            </div>
+        )}
+
+        <!-- 标签 -->
+        {hasTags && (
+            <div class="flex flex-wrap gap-1.5 mt-3">
+                {tags.map((tag) => (
+                    <a href={getTagUrl(tag)}
+                       class="text-xs px-2 py-0.5 rounded-full
+                              bg-black/[0.05] dark:bg-white/[0.08]
+                              text-neutral-500 dark:text-neutral-400
+                              hover:text-[var(--primary)] hover:bg-[oklch(0.95_0.05_var(--hue))] dark:hover:bg-[oklch(0.25_0.05_var(--hue))]
+                              transition-all">
+                        #{tag}
+                    </a>
+                ))}
+            </div>
+        )}
+
+        <!-- 底部操作栏（占位，保持视觉空间）-->
+        <div class="flex items-center gap-4 mt-3 text-neutral-400 dark:text-neutral-500">
+            <a href={`/thoughts/#${entry.slug}`}
+               class="flex items-center gap-1 text-xs hover:text-[var(--primary)] transition-colors">
+                <Icon name="material-symbols:link-rounded" class="text-base" />
+                <span>永久链接</span>
+            </a>
+        </div>
+    </div>
+</div>
