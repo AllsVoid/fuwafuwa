@@ -1,0 +1,62 @@
+---
+import type { GetStaticPaths } from "astro";
+import { getCollection } from "astro:content";
+import { Icon } from "astro-icon/components";
+import ThoughtCard from "@components/ThoughtCard.astro";
+import Pagination from "@components/control/Pagination.astro";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+
+export const getStaticPaths = (async ({ paginate }) => {
+	const allThoughts = await getCollection("thoughts", ({ data }) => {
+		return import.meta.env.PROD ? data.draft !== true : true;
+	});
+	const sorted = allThoughts.sort((a, b) => {
+		return new Date(b.data.published).getTime() - new Date(a.data.published).getTime();
+	});
+	return paginate(sorted, { pageSize: 10 });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+const len = page.data.length;
+---
+
+<MainGridLayout title={i18n(I18nKey.thoughts)}>
+    <div class="flex flex-col w-full gap-0 onload-animation">
+        <!-- 页面标题 -->
+        <div class="flex items-center gap-3 mb-6 px-1">
+            <Icon name="material-symbols:chat-bubble-outline-rounded" class="text-[1.75rem] text-[var(--primary)]" />
+            <h1 class="text-2xl font-bold text-neutral-900 dark:text-neutral-100 transition">
+                {i18n(I18nKey.thoughts)}
+            </h1>
+            <span class="text-sm text-neutral-400 dark:text-neutral-500 transition">
+                {page.total} 条
+            </span>
+        </div>
+
+        <!-- 时间线卡片列表 -->
+        <div class="flex flex-col">
+            {page.data.map((entry, i) => (
+                <div class="onload-animation" style={`animation-delay: calc(var(--content-delay) + ${i * 60}ms)`}>
+                    <ThoughtCard entry={entry} />
+                </div>
+            ))}
+        </div>
+
+        <!-- 空状态 -->
+        {len === 0 && (
+            <div class="flex flex-col items-center justify-center py-24 text-neutral-400 dark:text-neutral-500">
+                <Icon name="material-symbols:chat-bubble-outline-rounded" class="text-5xl mb-4 opacity-30" />
+                <p class="text-sm">还没有任何随想</p>
+            </div>
+        )}
+
+        <!-- 分页 -->
+        <Pagination
+            class="mx-auto mt-4 onload-animation"
+            page={page}
+            style={`animation-delay: calc(var(--content-delay) + ${len * 60}ms)`}
+        />
+    </div>
+</MainGridLayout>
