@@ -16,13 +16,28 @@ export type SiteConfig = {
 		| "tr"
 		| "id";
 
+	livephoto?: boolean;
+
+	/**
+	 * Banner 是否跟随页面滚动。
+	 * - true: 当前行为，Banner 是单独区域，滚动后会被顶出视口
+	 * - false: 背景模式，页面滚动时背景图一直在后面显示
+	 */
+	fixedBanner?: boolean;
+
 	themeColor: {
 		hue: number;
 		fixed: boolean;
 	};
+	/**
+	 * Acrylic strength (0 ~ 1).
+	 * 0 代表不启用，1 代表最高亚克力效果，可用 0.xx 做细调。
+	 */
+	acrylic?: number;
 	banner: {
 		enable: boolean;
 		src: string;
+		videoSrc?: string;
 		position?: "top" | "center" | "bottom";
 		credit: {
 			enable: boolean;
@@ -48,6 +63,7 @@ export enum LinkPreset {
 	Home = 0,
 	Archive = 1,
 	About = 2,
+	Thoughts = 3,
 }
 
 export type NavBarLink = {

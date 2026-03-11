@@ -38,6 +38,8 @@ const isHomePage = pathsEqual(Astro.url.pathname, url("/"));
 // defines global css variables
 // why doing this in Layout instead of GlobalStyles: https://github.com/withastro/astro/issues/6728#issuecomment-1502203757
 const configHue = siteConfig.themeColor.hue;
+const acrylicStrength = siteConfig.acrylic ?? 0;
+const isFixedBanner = siteConfig.fixedBanner ?? true;
 if (!banner || typeof banner !== "string" || banner.trim() === "") {
 	banner = siteConfig.banner.src;
 }
@@ -110,7 +112,7 @@ const bannerOffset =
 		))}
 
 		<!-- Set the theme before the page is rendered to avoid a flash -->
-		<script is:inline define:vars={{DEFAULT_THEME, LIGHT_MODE, DARK_MODE, AUTO_MODE, BANNER_HEIGHT_EXTEND, PAGE_WIDTH, configHue}}>
+		<script is:inline define:vars={{DEFAULT_THEME, LIGHT_MODE, DARK_MODE, AUTO_MODE, BANNER_HEIGHT_EXTEND, PAGE_WIDTH, configHue, acrylicStrength}}>
 			// Load the theme from local storage
 			const theme = localStorage.getItem('theme') || DEFAULT_THEME;
 			switch (theme) {
@@ -136,6 +138,10 @@ const bannerOffset =
 			let offset = Math.floor(window.innerHeight * (BANNER_HEIGHT_EXTEND / 100));
 			offset = offset - offset % 4;
 			document.documentElement.style.setProperty('--banner-height-extend', `${offset}px`);
+
+			// 设置亚克力强度 (0 ~ 1)，用于控制模糊与透明度
+			const acrylic = Math.max(0, Math.min(1, Number(acrylicStrength ?? 0)));
+			document.documentElement.style.setProperty('--acrylic-strength', String(acrylic));
 		</script>
 		<style define:vars={{
 			configHue,
@@ -148,7 +154,7 @@ const bannerOffset =
 		<link rel="alternate" type="application/rss+xml" title={profileConfig.name} href={`${Astro.site}rss.xml`}/>
 
 	</head>
-	<body class=" min-h-screen transition " class:list={[{"lg:is-home": isHomePage, "enable-banner": enableBanner}]}
+	<body class=" min-h-screen transition " class:list={[{"lg:is-home": isHomePage, "enable-banner": enableBanner, "banner-bg": !isFixedBanner}]}
 		  data-overlayscrollbars-initialize
 	>
 		<ConfigCarrier></ConfigCarrier>
@@ -188,6 +194,20 @@ const bannerOffset =
 	.enable-banner.is-home #sidebar-sticky {
 		@apply top-[calc(1rem_-_var(--banner-height-extend))]
 	}
+
+	/* 当 fixedBanner 为 false 时，
+	   让 Banner 作为固定在后面的全屏背景图存在 */
+	.banner-bg #banner-wrapper {
+		position: fixed;
+		inset: 0;
+		height: 100vh !important;
+		z-index: 0;
+	}
+	.banner-bg #banner {
+		height: 100vh !important;
+		transform: none !important;
+	}
+
 	.navbar-hidden {
 		@apply opacity-0 -translate-y-16
 	}
@@ -502,6 +522,43 @@ window.onresize = () => {
 	document.documentElement.style.setProperty('--banner-height-extend', `${offset}px`);
 }
 
+</script>
+
+<script>
+import * as LivePhotosKit from 'livephotoskit';
+import { siteConfig } from '../config';
+
+function initLivePhotos() {
+	if (!siteConfig.livephoto) return;
+
+	const wrappers = document.querySelectorAll<HTMLElement>('.live-photo-wrapper');
+	wrappers.forEach((wrapper) => {
+		if (wrapper.hasAttribute('data-initialized')) return;
+
+		const photoSrc = wrapper.getAttribute('data-photo-src');
+		const videoSrc = wrapper.getAttribute('data-video-src');
+		if (!photoSrc || !videoSrc) return;
+
+		const player = LivePhotosKit.augmentElementAsPlayer(wrapper);
+		player.photoSrc = photoSrc;
+		player.videoSrc = videoSrc;
+		wrapper.setAttribute('data-initialized', 'true');
+	});
+}
+
+const setupLivePhotoPlugin = () => {
+	initLivePhotos();
+
+	window.swup.hooks.on('content:replace', () => {
+		initLivePhotos();
+	});
+};
+
+if (window.swup) {
+	setupLivePhotoPlugin();
+} else {
+	document.addEventListener('swup:enable', setupLivePhotoPlugin);
+}
 </script>
 
 <script>

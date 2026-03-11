@@ -74,6 +74,32 @@
   img
     border-radius: 0.75rem
 
+  /* ::img{video="..."} 实况图容器 */
+  .live-photo-wrapper
+    display: block
+    width: 100%
+    min-height: 300px
+    border-radius: var(--radius-large)
+    overflow: hidden
+
+  /* ::img 指令尺寸：未使用指令时使用默认样式，使用 ::img{size="S|M|L"} 时应用下列宽度 */
+  .custom-md-img
+    margin-left: auto
+    margin-right: auto
+    border-radius: 0.75rem
+    overflow: hidden
+    & img
+      display: block
+      width: 100%
+      height: auto
+      border-radius: inherit
+    &.custom-md-img--s
+      max-width: 40%
+    &.custom-md-img--m
+      max-width: 65%
+    &.custom-md-img--l
+      max-width: 100%
+
   hr
     border-color: var(--line-divider)
     border-style: dashed

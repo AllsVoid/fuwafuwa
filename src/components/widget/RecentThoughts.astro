@@ -1,0 +1,77 @@
+---
+import { getCollection } from "astro:content";
+import { Icon } from "astro-icon/components";
+import I18nKey from "../../i18n/i18nKey";
+import { i18n } from "../../i18n/translation";
+import { url } from "../../utils/url-utils";
+import WidgetLayout from "./WidgetLayout.astro";
+
+interface Props {
+	class?: string;
+	style?: string;
+	limit?: number;
+}
+
+const className = Astro.props.class;
+const style = Astro.props.style;
+const limit = Astro.props.limit ?? 5;
+
+const allThoughts = await getCollection("thoughts", ({ data }) => {
+	return import.meta.env.PROD ? data.draft !== true : true;
+});
+
+const recent = allThoughts
+	.sort((a, b) => new Date(b.data.published).getTime() - new Date(a.data.published).getTime())
+	.slice(0, limit);
+
+function excerpt(body: string, maxLen = 55): string {
+	const stripped = body
+		.replace(/^---[\s\S]*?---\n?/, "")
+		.replace(/!\[.*?\]\(.*?\)/g, "")
+		.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+		.replace(/#{1,6}\s+/g, "")
+		.replace(/[*_`>~]/g, "")
+		.replace(/\n+/g, " ")
+		.trim();
+	return stripped.length > maxLen ? stripped.slice(0, maxLen) + "…" : stripped;
+}
+
+function shortDate(date: Date): string {
+	return `${date.getMonth() + 1}/${date.getDate()}`;
+}
+---
+
+<WidgetLayout name={i18n(I18nKey.recentThoughts)} id="recent-thoughts" class={className} style={style}>
+    {recent.length === 0 && (
+        <div class="px-2 py-3 text-sm text-neutral-400 dark:text-neutral-500 transition">
+            还没有随想
+        </div>
+    )}
+    {recent.map((t) => (
+        <a href={url(`/thoughts/#${t.slug}`)}
+           class="flex items-start gap-2 w-full rounded-lg px-2 py-2
+                  hover:bg-[var(--btn-plain-bg-hover)] active:bg-[var(--btn-plain-bg-active)]
+                  transition-all group">
+            <Icon name="material-symbols:chat-bubble-outline-rounded"
+                  class="text-base shrink-0 mt-0.5 text-neutral-400 dark:text-neutral-500 group-hover:text-[var(--primary)] transition-colors" />
+            <div class="flex-1 min-w-0">
+                <p class="text-sm leading-snug text-neutral-600 dark:text-neutral-400
+                          group-hover:text-[var(--primary)] transition-colors
+                          overflow-hidden text-ellipsis whitespace-nowrap">
+                    {excerpt(t.body)}
+                </p>
+                <span class="text-xs text-neutral-400 dark:text-neutral-500 transition">
+                    {shortDate(t.data.published)}
+                </span>
+            </div>
+        </a>
+    ))}
+    <a href={url("/thoughts/")}
+       class="flex items-center justify-center gap-1 w-full mt-1 h-8 rounded-lg text-xs
+              text-neutral-400 dark:text-neutral-500
+              hover:text-[var(--primary)] hover:bg-[var(--btn-plain-bg-hover)]
+              transition-all">
+        <span>{i18n(I18nKey.more)}</span>
+        <Icon name="material-symbols:arrow-forward-rounded" class="text-sm" />
+    </a>
+</WidgetLayout>

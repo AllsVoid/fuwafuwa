@@ -20,6 +20,28 @@ Create a GitHub repository card with the code `::github{repo="<owner>/<repo>"}`.
 ::github{repo="saicaca/fuwari"}
 ```
 
+## 图片尺寸指令 ::img
+
+通过 `::img` 指令可以指定文章内图片的显示尺寸；不使用时，图片使用默认样式（由主题 prose 与 `.custom-md img` 控制）。
+
+语法：`::img{src="图片路径" alt="描述" size="S|M|L"}`，其中 `size` 可选：
+
+- **S**（小）：最大宽度约 40%
+- **M**（中）：最大宽度约 65%
+- **L**（大）：最大宽度 100%
+
+也可写为 `small` / `medium` / `large`。`alt` 可选。
+
+示例（将路径替换为你自己的图片）：
+
+```markdown
+::img{src="/images/example.jpg" alt="示例" size="S"}
+::img{src="/images/example.jpg" size="M"}
+::img{src="/images/example.jpg" alt="大图" size="L"}
+```
+
+普通 Markdown 图片 `![alt](url)` 不受影响，仍使用默认样式。
+
 ## Admonitions
 
 Following types of admonitions are supported: `note` `tip` `important` `warning` `caution`
