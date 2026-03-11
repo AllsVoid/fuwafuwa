@@ -22,6 +22,11 @@ export type SiteConfig = {
 		hue: number;
 		fixed: boolean;
 	};
+	/**
+	 * Acrylic strength (0 ~ 1).
+	 * 0 代表不启用，1 代表最高亚克力效果，可用 0.xx 做细调。
+	 */
+	acrylic?: number;
 	banner: {
 		enable: boolean;
 		src: string;
