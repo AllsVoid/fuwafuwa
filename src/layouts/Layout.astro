@@ -39,6 +39,7 @@ const isHomePage = pathsEqual(Astro.url.pathname, url("/"));
 // why doing this in Layout instead of GlobalStyles: https://github.com/withastro/astro/issues/6728#issuecomment-1502203757
 const configHue = siteConfig.themeColor.hue;
 const acrylicStrength = siteConfig.acrylic ?? 0;
+const isFixedBanner = siteConfig.fixedBanner ?? true;
 if (!banner || typeof banner !== "string" || banner.trim() === "") {
 	banner = siteConfig.banner.src;
 }
@@ -153,7 +154,7 @@ const bannerOffset =
 		<link rel="alternate" type="application/rss+xml" title={profileConfig.name} href={`${Astro.site}rss.xml`}/>
 
 	</head>
-	<body class=" min-h-screen transition " class:list={[{"lg:is-home": isHomePage, "enable-banner": enableBanner}]}
+	<body class=" min-h-screen transition " class:list={[{"lg:is-home": isHomePage, "enable-banner": enableBanner, "banner-bg": !isFixedBanner}]}
 		  data-overlayscrollbars-initialize
 	>
 		<ConfigCarrier></ConfigCarrier>
@@ -193,6 +194,20 @@ const bannerOffset =
 	.enable-banner.is-home #sidebar-sticky {
 		@apply top-[calc(1rem_-_var(--banner-height-extend))]
 	}
+
+	/* 当 fixedBanner 为 false 时，
+	   让 Banner 作为固定在后面的全屏背景图存在 */
+	.banner-bg #banner-wrapper {
+		position: fixed;
+		inset: 0;
+		height: 100vh !important;
+		z-index: 0;
+	}
+	.banner-bg #banner {
+		height: 100vh !important;
+		transform: none !important;
+	}
+
 	.navbar-hidden {
 		@apply opacity-0 -translate-y-16
 	}

@@ -18,6 +18,13 @@ export type SiteConfig = {
 
 	livephoto?: boolean;
 
+	/**
+	 * Banner 是否跟随页面滚动。
+	 * - true: 当前行为，Banner 是单独区域，滚动后会被顶出视口
+	 * - false: 背景模式，页面滚动时背景图一直在后面显示
+	 */
+	fixedBanner?: boolean;
+
 	themeColor: {
 		hue: number;
 		fixed: boolean;
