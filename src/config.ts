@@ -12,12 +12,12 @@ export const siteConfig: SiteConfig = {
 	subtitle: "Demo Site",
 	lang: "zh_CN",
 	livephoto: true,
-	fixedBanner: true,
+	fixedBanner: false,
 	themeColor: {
 		hue: 250, // Default hue for the theme color, from 0 to 360. e.g. red: 0, teal: 200, cyan: 250, pink: 345
 		fixed: false, // Hide the theme color picker for visitors
 	},
-	acrylic: 0,
+	acrylic: 0.9,
 	banner: {
 		enable: true,
 		src: "assets/images/demo-banner.png",
